@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Service Module - Standalone Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .level-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .level-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .level-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .level-card h3 {
+            color: #667eea;
+            margin-bottom: 5px;
+            font-size: 1.5em;
+        }
+
+        .level-card .level-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .level-card p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .scenario-list {
+            margin-top: 20px;
+        }
+
+        .scenario-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .scenario-item:hover {
+            background: #f9f9f9;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .scenario-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .scenario-item p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .exercise-container {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .customer-message {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .customer-message strong {
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .customer-message p {
+            margin-top: 10px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .instruction-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .response-area textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        .response-area textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .choice-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .choice-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .choice-option:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .choice-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .timer {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .completion-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .completion-screen h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .json-preview {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 400px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            text-align: left;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎧 Customer Service Module</h1>
+            <p>Immersive English Language Assessment - Interactive Demo</p>
+        </div>
+
+        <div class="content">
+            <!-- Level Selection Section -->
+            <div id="level-section" class="section active">
+                <h2>Select Your CEFR Level</h2>
+                <div class="info-box">
+                    Choose the level that best matches your English proficiency. Each level contains realistic customer service scenarios.
+                </div>
+
+                <div class="level-selector">
+                    <div class="level-card" data-level="A1">
+                        <h3>A1</h3>
+                        <div class="level-name">Beginner</div>
+                        <p>Basic greetings and simple phrases</p>
+                    </div>
+                    <div class="level-card" data-level="A2">
+                        <h3>A2</h3>
+                        <div class="level-name">Elementary</div>
+                        <p>Simple queries and routine tasks</p>
+                    </div>
+                    <div class="level-card" data-level="B1">
+                        <h3>B1</h3>
+                        <div class="level-name">Intermediate</div>
+                        <p>Handle concerns and explain</p>
+                    </div>
+                    <div class="level-card" data-level="B2">
+                        <h3>B2</h3>
+                        <div class="level-name">Upper Int.</div>
+                        <p>Complex negotiations</p>
+                    </div>
+                    <div class="level-card" data-level="C1">
+                        <h3>C1</h3>
+                        <div class="level-name">Advanced</div>
+                        <p>Strategic communication</p>
+                    </div>
+                    <div class="level-card" data-level="C2">
+                        <h3>C2</h3>
+                        <div class="level-name">Proficient</div>
+                        <p>Executive-level mastery</p>
+                    </div>
+                </div>
+
+                <button class="btn" id="start-btn" style="margin-top: 20px;" disabled>Continue to Scenarios</button>
+            </div>
+
+            <!-- Scenario Selection Section -->
+            <div id="scenario-section" class="section">
+                <h2>Choose a Scenario</h2>
+                <div id="scenario-list" class="scenario-list"></div>
+            </div>
+
+            <!-- Exercise Section -->
+            <div id="exercise-section" class="section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+
+                <div id="exercise-container"></div>
+
+                <button class="btn" id="submit-btn">Submit Response</button>
+            </div>
+
+            <!-- Completion Section -->
+            <div id="completion-section" class="section">
+                <div class="completion-screen">
+                    <h2>🎉 Scenario Complete!</h2>
+                    <p style="margin-bottom: 20px;">Excellent work! All your responses have been captured.</p>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-exercises">0</div>
+                            <div class="stat-label">Exercises</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-time">0s</div>
+                            <div class="stat-label">Total Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-avg">0s</div>
+                            <div class="stat-label">Avg/Exercise</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stat-words">0</div>
+                            <div class="stat-label">Words Used</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 30px 0 15px 0;">📊 Exported JSON Data for Scoring</h3>
+                    <p style="color: #666; margin-bottom: 15px;">This structured data is ready for automated scoring by an AI agent:</p>
+                    <div class="json-preview" id="json-preview"></div>
+
+                    <div style="margin-top: 20px;">
+                        <button class="btn" id="export-btn">📥 Download JSON</button>
+                        <button class="btn btn-secondary" id="restart-btn" style="margin-left: 10px;">🔄 Try Another Level</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/uuid@9.0.0/dist/umd/uuid.min.js"></script>
+    <script>
+        // Embedded scenario data - this would normally come from the server
+        const SCENARIOS_DATA = {
+            A1: [{
+                id: 'A1_GREETING',
+                title: 'Welcoming a Customer',
+                context: 'You work at a hotel reception desk. A customer walks in.',
+                learningObjectives: ['Use basic greetings', 'Ask simple questions', 'Provide basic help'],
+                exercises: [
+                    {
+                        id: 'E1',
+                        type: 'multiple_choice',
+                        prompt: '*walks up to desk and smiles*',
+                        instruction: 'How do you greet the customer?',
+                        config: {
+                            options: [
+                                { id: 'a', text: 'Hello! How can I help you?' },
+                                { id: 'b', text: 'Good morning! Welcome!' },
+                                { id: 'c', text: 'Hi there! Can I help you?' }
+                            ]
+                        }
+                    },
+                    {
+                        id: 'E2',
+                        type: 'text_input',
+                        prompt: 'Hello! Where is the bathroom?',
+                        instruction: 'Write your response to help the customer',
+                        config: { placeholder: 'Type your response...' }
+                    }
+                ]
+            }],
+            A2: [{
+                id: 'A2_PRODUCT',
+                title: 'Providing Product Information',
+                context: 'You work in an electronics store. A customer asks about a smartphone.',
+                learningObjectives: ['Describe products', 'Answer questions', 'Make recommendations'],
+                exercises: [
+                    {
+                        id: 'E1',
+                        type: 'text_input',
+                        prompt: 'Hi, I\'m looking for a new phone. What do you recommend?',
+                        instruction: 'Ask about their needs and suggest options',
+                        config: { placeholder: 'Type your response...' }
+                    },
+                    {
+                        id: 'E2',
+                        type: 'multiple_choice',
+                        prompt: 'Can I return it if I don\'t like it?',
+                        instruction: 'Choose the best response about the return policy',
+                        config: {
+                            options: [
+                                { id: 'a', text: 'Yes, you have 30 days to return it with the receipt.' },
+                                { id: 'b', text: 'No, all sales are final.' },
+                                { id: 'c', text: 'You can return it within 14 days if unopened.' }
+                            ]
+                        }
+                    }
+                ]
+            }],
+            B1: [{
+                id: 'B1_DELIVERY',
+                title: 'Resolving a Delivery Issue',
+                context: 'You work for an online retailer. A customer\'s package hasn\'t arrived.',
+                learningObjectives: ['Handle concerns', 'Show empathy', 'Offer solutions'],
+                exercises: [
+                    {
+                        id: 'E1',
+                        type: 'text_input',
+                        prompt: 'I ordered something a week ago and it still hasn\'t arrived. The tracking says delayed but gives no details.',
+                        instruction: 'Show empathy and explain how you\'ll help',
+                        config: { placeholder: 'Type your response...' }
+                    },
+                    {
+                        id: 'E2',
+                        type: 'text_input',
+                        prompt: 'This is really frustrating. I needed it for this weekend. What can you do?',
+                        instruction: 'Offer specific solutions and alternatives',
+                        config: { placeholder: 'Type your response...' }
+                    },
+                    {
+                        id: 'E3',
+                        type: 'multiple_choice',
+                        prompt: 'If it doesn\'t arrive by tomorrow, I\'ll need a refund.',
+                        instruction: 'Choose the most appropriate response',
+                        config: {
+                            options: [
+                                { id: 'a', text: 'I\'ll make a note. Please contact us again tomorrow.' },
+                                { id: 'b', text: 'That\'s not our policy. You need to wait 10 business days.' },
+                                { id: 'c', text: 'I understand completely. If it doesn\'t arrive tomorrow, I\'ll arrange expedited replacement shipping at no charge, and if the original arrives, you can return it free.' }
+                            ]
+                        }
+                    }
+                ]
+            }],
+            B2: [{
+                id: 'B2_COMPLAINT',
+                title: 'Managing an Angry Customer',
+                context: 'You manage a restaurant. A customer had a very bad experience.',
+                learningObjectives: ['De-escalate situations', 'Handle complaints', 'Negotiate solutions'],
+                exercises: [
+                    {
+                        id: 'E1',
+                        type: 'text_input',
+                        prompt: 'This is unacceptable! The food was cold, we waited 45 minutes, and the waiter was rude. I want to speak to the manager!',
+                        instruction: 'You are the manager. Address all concerns and de-escalate',
+                        config: { placeholder: 'Type your response...' }
+                    },
+                    {
+                        id: 'E2',
+                        type: 'text_input',
+                        prompt: 'An apology isn\'t enough. I paid $150 for this terrible experience. This ruined our anniversary!',
+                        instruction: 'Offer appropriate compensation and show genuine empathy',
+                        config: { placeholder: 'Type your response...' }
+                    },
+                    {
+                        id: 'E3',
+                        type: 'multiple_choice',
+                        prompt: 'I\'m going to leave a terrible review online if you don\'t make this right.',
+                        instruction: 'Choose the most professional response',
+                        config: {
+                            options: [
+                                { id: 'a', text: 'Please don\'t do that. I\'ll give you a full refund.' },
+                                { id: 'b', text: 'I completely understand your frustration. You have every right to share your experience. However, I\'d like to make this right first. I\'m offering a full refund, a complimentary future meal for two, and I\'ll personally ensure we address the service issues. Would you give us a chance to restore your faith in us?' },
+                                { id: 'c', text: 'Threatening reviews isn\'t constructive. Let\'s focus on resolving this.' }
+                            ]
+                        }
+                    }
+                ]
+            }],
+            C1: [{
+                id: 'C1_NEGOTIATION',
+                title: 'Complex Contract Negotiation',
+                context: 'You\'re a sales manager. A corporate client wants to renegotiate their contract.',
+                learningObjectives: ['Navigate negotiations', 'Use persuasive language', 'Balance interests'],
+                exercises: [
+                    {
+                        id: 'E1',
+                        type: 'text_input',
+                        prompt: 'We\'ve been with you for three years. Your competitors offer 20% lower rates with more features. Unless you match or beat their offer, we\'re leaving.',
+                        instruction: 'Write a strategic response protecting company interests',
+                        config: { placeholder: 'Type your response...' }
+                    },
+                    {
+                        id: 'E2',
+                        type: 'text_input',
+                        prompt: 'I appreciate that, but I need concrete numbers. What exactly can you offer?',
+                        instruction: 'Present a compelling counter-offer with specifics',
+                        config: { placeholder: 'Type your response...' }
+                    }
+                ]
+            }],
+            C2: [{
+                id: 'C2_EXECUTIVE',
+                title: 'High-Stakes Executive Relations',
+                context: 'You\'re VP of Customer Success. A Fortune 500 CEO is considering ending a $5M contract.',
+                learningObjectives: ['Executive communication', 'Strategic thinking', 'High-stakes situations'],
+                exercises: [
+                    {
+                        id: 'E1',
+                        type: 'text_input',
+                        prompt: 'I\'ve reviewed your service record this quarter. Three major outages, poor communication, systematic escalation failures. Why shouldn\'t I recommend termination and pursue litigation for SLA breach?',
+                        instruction: 'Craft sophisticated response with accountability and path forward',
+                        config: { placeholder: 'Type your response...' }
+                    },
+                    {
+                        id: 'E2',
+                        type: 'text_input',
+                        prompt: 'I need more than process improvements. What structural changes are you implementing, and who\'s being held accountable?',
+                        instruction: 'Provide specific organizational changes and accountability',
+                        config: { placeholder: 'Type your response...' }
+                    }
+                ]
+            }]
+        };
+
+        // State management
+        let state = {
+            sessionId: null,
+            userId: null,
+            cefrLevel: null,
+            scenario: null,
+            currentExerciseIndex: 0,
+            responses: [],
+            startTime: null,
+            exerciseStartTime: null,
+            pauses: 0
+        };
+
+        let timerInterval = null;
+
+        // Level selection
+        document.querySelectorAll('.level-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                state.cefrLevel = this.dataset.level;
+                document.getElementById('start-btn').disabled = false;
+            });
+        });
+
+        // Start button
+        document.getElementById('start-btn').addEventListener('click', () => {
+            state.sessionId = 'session_' + Date.now();
+            state.userId = 'demo_user_' + Date.now();
+            state.startTime = new Date();
+            showScenarios();
+        });
+
+        function showScenarios() {
+            const scenarios = SCENARIOS_DATA[state.cefrLevel];
+            const list = document.getElementById('scenario-list');
+
+            list.innerHTML = scenarios.map(scenario => `
+                <div class="scenario-item" data-id="${scenario.id}">
+                    <h3>${scenario.title}</h3>
+                    <p><strong>Context:</strong> ${scenario.context}</p>
+                    <p><strong>Exercises:</strong> ${scenario.exercises.length}</p>
+                    <p><strong>Objectives:</strong> ${scenario.learningObjectives.join(', ')}</p>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.scenario-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    startScenario(this.dataset.id);
+                });
+            });
+
+            showSection('scenario-section');
+        }
+
+        function startScenario(scenarioId) {
+            state.scenario = SCENARIOS_DATA[state.cefrLevel].find(s => s.id === scenarioId);
+            state.currentExerciseIndex = 0;
+            loadExercise();
+            showSection('exercise-section');
+        }
+
+        function loadExercise() {
+            state.exerciseStartTime = Date.now();
+            const exercise = state.scenario.exercises[state.currentExerciseIndex];
+            const progress = (state.currentExerciseIndex / state.scenario.exercises.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+
+            const container = document.getElementById('exercise-container');
+            container.innerHTML = `
+                <div class="exercise-container">
+                    <h3>Exercise ${state.currentExerciseIndex + 1} of ${state.scenario.exercises.length}</h3>
+                    <div class="timer" id="timer">Time: 00:00</div>
+
+                    <div class="customer-message">
+                        <strong>Customer says:</strong>
+                        <p>"${exercise.prompt}"</p>
+                    </div>
+
+                    <div class="instruction-box">
+                        <strong>📝 Your task:</strong> ${exercise.instruction}
+                    </div>
+
+                    <div class="response-area" id="response-area"></div>
+                </div>
+            `;
+
+            const responseArea = document.getElementById('response-area');
+
+            if (exercise.type === 'text_input') {
+                responseArea.innerHTML = `<textarea id="response-input" placeholder="${exercise.config.placeholder}"></textarea>`;
+            } else if (exercise.type === 'multiple_choice') {
+                responseArea.innerHTML = `
+                    <div class="choice-options">
+                        ${exercise.config.options.map(opt => `
+                            <div class="choice-option" data-id="${opt.id}">
+                                <strong>${opt.id.toUpperCase()})</strong> ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                document.querySelectorAll('.choice-option').forEach(opt => {
+                    opt.addEventListener('click', function() {
+                        document.querySelectorAll('.choice-option').forEach(o => o.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                });
+            }
+
+            startTimer();
+        }
+
+        function startTimer() {
+            let seconds = 0;
+            timerInterval = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                document.getElementById('timer').textContent =
+                    `Time: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            clearInterval(timerInterval);
+
+            const exercise = state.scenario.exercises[state.currentExerciseIndex];
+            const timeSpent = Math.floor((Date.now() - state.exerciseStartTime) / 1000);
+
+            let responseValue;
+            if (exercise.type === 'text_input') {
+                responseValue = document.getElementById('response-input').value;
+                if (!responseValue.trim()) {
+                    alert('Please enter a response');
+                    startTimer();
+                    return;
+                }
+            } else if (exercise.type === 'multiple_choice') {
+                const selected = document.querySelector('.choice-option.selected');
+                if (!selected) {
+                    alert('Please select an option');
+                    startTimer();
+                    return;
+                }
+                responseValue = selected.dataset.id;
+            }
+
+            // Save response
+            state.responses.push({
+                exerciseId: exercise.id,
+                type: exercise.type,
+                value: responseValue,
+                timestamp: Date.now(),
+                timeSpent: timeSpent,
+                wordCount: exercise.type === 'text_input' ? responseValue.split(/\s+/).length : 0
+            });
+
+            state.currentExerciseIndex++;
+
+            if (state.currentExerciseIndex < state.scenario.exercises.length) {
+                loadExercise();
+            } else {
+                completeSession();
+            }
+        });
+
+        function completeSession() {
+            const endTime = new Date();
+            const totalTime = Math.floor((endTime - state.startTime) / 1000);
+            const avgTime = totalTime / state.responses.length;
+            const totalWords = state.responses.reduce((sum, r) => sum + r.wordCount, 0);
+
+            // Build JSON export
+            const sessionData = {
+                sessionId: state.sessionId,
+                userId: state.userId,
+                cefrLevel: state.cefrLevel,
+                scenarioId: state.scenario.id,
+                startTime: state.startTime.toISOString(),
+                endTime: endTime.toISOString(),
+                duration: totalTime,
+                status: 'completed',
+                responses: state.responses,
+                behaviorMetrics: {
+                    totalTimeSpent: totalTime,
+                    averageResponseTime: avgTime,
+                    pauseCount: state.pauses
+                },
+                summary: {
+                    totalExercises: state.responses.length,
+                    averageTimePerExercise: avgTime,
+                    totalWordsProduced: totalWords
+                }
+            };
+
+            // Update stats
+            document.getElementById('stat-exercises').textContent = state.responses.length;
+            document.getElementById('stat-time').textContent = totalTime + 's';
+            document.getElementById('stat-avg').textContent = avgTime.toFixed(1) + 's';
+            document.getElementById('stat-words').textContent = totalWords;
+
+            // Show JSON
+            document.getElementById('json-preview').textContent = JSON.stringify(sessionData, null, 2);
+
+            window.sessionData = sessionData;
+            showSection('completion-section');
+        }
+
+        document.getElementById('export-btn').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(window.sessionData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `customer_service_assessment_${window.sessionData.sessionId}.json`;
+            a.click();
+        });
+
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            location.reload();
+        });
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
